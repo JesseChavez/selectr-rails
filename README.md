@@ -43,7 +43,7 @@ For more information check out the [Selectr Documentation](https://github.com/Mo
 
 ## Contributing
 
-Bug reports and pull requests are welcome on GitHub at https://github.com/[USERNAME]/selectr-rails.
+Bug reports and pull requests are welcome on GitHub at https://github.com/JesseChavez/selectr-rails.
 
 ## License
 
