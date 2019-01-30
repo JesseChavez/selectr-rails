@@ -1,5 +1,5 @@
 /*!
- * Selectr 2.4.0
+ * Selectr 2.4.8
  * http://mobius.ovh/docs/selectr
  *
  * Released under the MIT license
@@ -16,90 +16,6 @@
     }
 }(this, function(plugin) {
     'use strict';
-
-    /**
-     * Default configuration options
-     * @type {Object}
-     */
-    var defaultConfig = {
-        /**
-         * Emulates browser behaviour by selecting the first option by default
-         * @type {Boolean}
-         */
-        defaultSelected: true,
-
-        /**
-         * Sets the width of the container
-         * @type {String}
-         */
-        width: "auto",
-
-        /**
-         * Enables/ disables the container
-         * @type {Boolean}
-         */
-        disabled: false,
-
-        /**
-         * Enables / disables the search function
-         * @type {Boolean}
-         */
-        searchable: true,
-
-        /**
-         * Enable disable the clear button
-         * @type {Boolean}
-         */
-        clearable: false,
-
-        /**
-         * Sort the tags / multiselect options
-         * @type {Boolean}
-         */
-        sortSelected: false,
-
-        /**
-         * Allow deselecting of select-one options
-         * @type {Boolean}
-         */
-        allowDeselect: false,
-
-        /**
-         * Close the dropdown when scrolling (@AlexanderReiswich, #11)
-         * @type {Boolean}
-         */
-        closeOnScroll: false,
-
-        /**
-         * Allow the use of the native dropdown (@jonnyscholes, #14)
-         * @type {Boolean}
-         */
-        nativeDropdown: false,
-
-        /**
-         * Allow the use of native typing behavior for toggling, searching, selecting
-         * @type {boolean}
-         */
-        nativeKeyboard: false,
-
-        /**
-         * Set the main placeholder
-         * @type {String}
-         */
-        placeholder: "Select an option...",
-
-        /**
-         * Allow the tagging feature
-         * @type {Boolean}
-         */
-        taggable: false,
-
-        /**
-         * Set the tag input placeholder (@labikmartin, #21, #22)
-         * @type {String}
-         */
-        tagPlaceholder: "Enter a tag..."
-    };
 
     /**
      * Event Emitter
@@ -172,16 +88,18 @@
      */
     var util = {
         extend: function(src, props) {
-            props = props || {};
-            var p;
-            for (p in src) {
-                if (src.hasOwnProperty(p)) {
-                    if (!props.hasOwnProperty(p)) {
-                        props[p] = src[p];
+                    for (var prop in props) {
+                            if (props.hasOwnProperty(prop)) {
+                                    var val = props[prop];
+                                    if (val && Object.prototype.toString.call(val) === "[object Object]") {
+                                            src[prop] = src[prop] || {};
+                                            util.extend(src[prop], val);
+                                    } else {
+                                            src[prop] = val;
+                                    }
+                            }
                     }
-                }
-            }
-            return props;
+                    return src;
         },
         each: function(a, b, c) {
             if ("[object Object]" === Object.prototype.toString.call(a)) {
@@ -441,7 +359,7 @@
         this.selected = util.createElement("div", {
             class: "selectr-selected",
             disabled: this.disabled,
-            tabIndex: 1, // enable tabIndex (#9)
+            tabIndex: 0,
             "aria-expanded": false
         });
 
@@ -532,7 +450,8 @@
                 autocapitalize: "off",
                 spellcheck: "false",
                 role: "textbox",
-                type: "search"
+                type: "search",
+                placeholder: this.config.messages.searchPlaceholder
             });
             this.inputClear = util.createElement("button", {
                 class: "selectr-input-clear",
@@ -627,6 +546,8 @@
 
                         j++;
                     }, this);
+
+                    this.el.appendChild(optgroup);
                 } else {
                     option = new Option(opt.text, opt.value, false, opt.hasOwnProperty("selected") && opt.selected === true);
 
@@ -707,7 +628,7 @@
 
         if (e.which === 13) {
 
-            if (this.config.taggable && this.input.value.length > 0) {
+            if ( this.noResults || (this.config.taggable && this.input.value.length > 0) ) {
                 return false;
             }
 
@@ -969,8 +890,6 @@
     // Main Lib
     var Selectr = function(el, config) {
 
-        config = config || {};
-
         if (!el) {
             throw new Error("You must supply either a HTMLSelectElement or a CSS3 selector string.");
         }
@@ -1001,6 +920,101 @@
     Selectr.prototype.render = function(config) {
 
         if (this.rendered) return;
+
+        /**
+         * Default configuration options
+         * @type {Object}
+         */
+        var defaultConfig = {
+            /**
+             * Emulates browser behaviour by selecting the first option by default
+             * @type {Boolean}
+             */
+            defaultSelected: true,
+
+            /**
+             * Sets the width of the container
+             * @type {String}
+             */
+            width: "auto",
+
+            /**
+             * Enables/ disables the container
+             * @type {Boolean}
+             */
+            disabled: false,
+
+            /**
+             * Enables / disables the search function
+             * @type {Boolean}
+             */
+            searchable: true,
+
+            /**
+             * Enable disable the clear button
+             * @type {Boolean}
+             */
+            clearable: false,
+
+            /**
+             * Sort the tags / multiselect options
+             * @type {Boolean}
+             */
+            sortSelected: false,
+
+            /**
+             * Allow deselecting of select-one options
+             * @type {Boolean}
+             */
+            allowDeselect: false,
+
+            /**
+             * Close the dropdown when scrolling (@AlexanderReiswich, #11)
+             * @type {Boolean}
+             */
+            closeOnScroll: false,
+
+            /**
+             * Allow the use of the native dropdown (@jonnyscholes, #14)
+             * @type {Boolean}
+             */
+            nativeDropdown: false,
+
+            /**
+             * Allow the use of native typing behavior for toggling, searching, selecting
+             * @type {boolean}
+             */
+            nativeKeyboard: false,
+
+            /**
+             * Set the main placeholder
+             * @type {String}
+             */
+            placeholder: "Select an option...",
+
+            /**
+             * Allow the tagging feature
+             * @type {Boolean}
+             */
+            taggable: false,
+
+            /**
+             * Set the tag input placeholder (@labikmartin, #21, #22)
+             * @type {String}
+             */
+            tagPlaceholder: "Enter a tag...",
+
+            messages: {
+                noResults: "No results.",
+                noOptions: "No options available.",
+                maxSelections: "A maximum of {max} items can be selected.",
+                tagDuplicate: "That tag is already in use.",
+                searchPlaceholder: "Search options..."
+            }
+        };
+
+        // add instance reference (#87)
+        this.el.selectr = this;
 
         // Merge defaults with user set config
         this.config = util.extend(defaultConfig, config);
@@ -1040,6 +1054,8 @@
         this.customOption = this.config.hasOwnProperty("renderOption") && typeof this.config.renderOption === "function";
         this.customSelected = this.config.hasOwnProperty("renderSelection") && typeof this.config.renderSelection === "function";
 
+        this.supportsEventPassiveOption = this.detectEventPassiveOption();
+        
         // Enable event emitter
         Events.mixin(this);
 
@@ -1078,6 +1094,24 @@
     };
 
     /**
+     * Feature detection: addEventListener passive option
+     * https://dom.spec.whatwg.org/#dom-addeventlisteneroptions-passive
+     * https://github.com/WICG/EventListenerOptions/blob/gh-pages/explainer.md
+     */
+    Selectr.prototype.detectEventPassiveOption = function () {
+        var supportsPassiveOption = false;
+        try {
+            var opts = Object.defineProperty({}, 'passive', {
+                get: function() {
+                    supportsPassiveOption = true;
+                }
+            });
+            window.addEventListener('test', null, opts);
+        } catch (e) {}
+        return supportsPassiveOption;
+    }
+    
+    /**
      * Attach the required event listeners
      */
     Selectr.prototype.bindEvents = function() {
@@ -1096,7 +1130,7 @@
                 if (e.changedTouches[0].target === that.el) {
                     that.toggle();
                 }
-            });
+            }, this.supportsEventPassiveOption ? { passive: true } : false);
 
             this.container.addEventListener("click", function(e) {
                 if (e.target === that.el) {
@@ -1141,20 +1175,30 @@
 
         }
 
-        // Open the dropdown with Enter key if focused
-        if (this.config.nativeDropdown) {
-            this.container.addEventListener("keydown", function(e) {
-                if (e.key === "Enter" && that.selected === document.activeElement) {
-                    // Show the native
-                    that.toggle();
+        // Keyboard Support
+        this.container.addEventListener("keydown", function(e) {
+            if (e.key === "Escape") {
+              that.close();
+            }
 
+            if (e.key === "Enter" && that.selected === document.activeElement) {
+                if (typeof that.el.form.submit !== 'undefined') that.el.form.submit();
+            }
+
+            if ((e.key === " " || e.key === "ArrowUp" || e.key === "ArrowDown") &&
+              that.selected === document.activeElement) {
+                setTimeout(function() {
+                    that.toggle();
+                }, 200);
+
+                if (that.config.nativeDropdown) {
                     // Focus on the native multiselect
                     setTimeout(function() {
                         that.el.focus();
                     }, 200);
                 }
-            });
-        }
+            }
+        });
 
         // Non-native dropdown
         this.selected.addEventListener("click", function(e) {
@@ -1163,7 +1207,6 @@
                 that.toggle();
             }
 
-            e.stopPropagation();
             e.preventDefault();
         });
 
@@ -1353,7 +1396,7 @@
 
                         if (!option) {
                             this.value = '';
-                            that.setMessage('That tag is already in use.');
+                            that.setMessage(that.config.messages.tagDuplicate);
                         } else {
                             that.close();
                             clearSearch.call(that);
@@ -1502,6 +1545,9 @@
         this.container.parentNode.replaceChild(this.el, this.container);
 
         this.rendered = false;
+
+        // remove reference
+        delete this.el.selectr;
     };
 
     /**
@@ -1545,7 +1591,7 @@
             }
 
             if (this.config.maxSelections && this.tags.length === this.config.maxSelections) {
-                this.setMessage("A maximum of " + this.config.maxSelections + " items can be selected.", true);
+                this.setMessage(this.config.messages.maxSelections.replace("{max}", this.config.maxSelections), true);
                 return false;
             }
 
@@ -1588,6 +1634,15 @@
         this.emit("selectr.change", option);
 
         this.emit("selectr.select", option);
+            
+        // fire native change event
+        if ("createEvent" in document) {
+            var evt = document.createEvent("HTMLEvents");
+            evt.initEvent("change", true, true);
+            this.el.dispatchEvent(evt);
+        } else {
+            this.el.fireEvent("onchange");
+        }    
     };
 
     /**
@@ -1637,6 +1692,15 @@
         this.emit("selectr.change", null);
 
         this.emit("selectr.deselect", option);
+            
+        // fire native change event
+        if ("createEvent" in document) {
+            var evt = document.createEvent("HTMLEvents");
+            evt.initEvent("change", true, true);
+            this.el.dispatchEvent(evt);
+        } else {
+            this.el.fireEvent("onchange");
+        }
     };
 
     /**
@@ -1656,7 +1720,7 @@
         }
 
         util.each(this.options, function(i, option) {
-            if (isArray && util.includes(value.toString(), option.value) || option.value === value) {
+            if (isArray && (value.indexOf(option.value) > -1) || option.value === value) {
                 this.change(option.idx);
             }
         }, this);
@@ -1712,7 +1776,6 @@
      */
     Selectr.prototype.add = function(data, checkDuplicate) {
         if (data) {
-
             this.data = this.data || [];
             this.items = this.items || [];
             this.options = this.options || [];
@@ -1758,13 +1821,13 @@
                 if (data.selected) {
                     this.select(option.idx);
                 }
+                            
+                                // We may have had an empty select so update
+                                // the placeholder to reflect the changes.
+                                this.setPlaceholder();
 
                 return option;
             }
-
-            // We may have had an empty select so update
-            // the placeholder to reflect the changes.
-            this.setPlaceholder();
 
             // Recount the pages
             if (this.config.pagination) {
@@ -1786,7 +1849,7 @@
             util.each(o, function(i, opt) {
                 if (util.isInt(opt)) {
                     options.push(this.getOptionByIndex(opt));
-                } else if (typeof o === "string") {
+                } else if (typeof opt === "string") {
                     options.push(this.getOptionByValue(opt));
                 }
             }, this);
@@ -1924,12 +1987,14 @@
                 // Append results
                 if ( !f.childElementCount ) {
                     if ( !this.config.taggable ) {
-                        this.setMessage( "no results." );
+                        this.noResults = true;
+                        this.setMessage( this.config.messages.noResults );
                     }
                 } else {
                     // Highlight top result (@binary-koan #26)
                     var prevEl = this.items[this.navIndex];
                     var firstEl = f.querySelector(".selectr-option:not(.excluded)");
+                    this.noResults = false;
 
                     util.removeClass( prevEl, "active" );
                     this.navIndex = firstEl.idx;
@@ -2057,6 +2122,7 @@
 
         util.truncate(this.tree);
         clearSearch.call(this);
+        this.selected.focus();
     };
 
 
@@ -2188,7 +2254,7 @@
         placeholder = placeholder || this.config.placeholder || this.el.getAttribute("placeholder");
 
         if (!this.options.length) {
-            placeholder = "No options available";
+            placeholder = this.config.messages.noOptions;
         }
 
         this.placeEl.innerHTML = placeholder;
@@ -2282,3 +2348,4 @@
 
     return Selectr;
 }));
+
